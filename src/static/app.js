@@ -3,6 +3,54 @@ document.addEventListener("DOMContentLoaded", () => {
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
+  const notificationsList = document.getElementById("notifications-list");
+  const emailNotifications = document.getElementById("email-notifications");
+  const emailInput = document.getElementById("email");
+
+  async function loadNotifications() {
+    const email = emailInput.value.trim();
+    if (!email) {
+      notificationsList.innerHTML =
+        "<p>Enter a student email and sign up to view notifications.</p>";
+      return;
+    }
+
+    try {
+      const [notificationsResponse, preferencesResponse] = await Promise.all([
+        fetch(`/notifications?email=${encodeURIComponent(email)}`),
+        fetch(
+          `/notifications/preferences?email=${encodeURIComponent(email)}`
+        ),
+      ]);
+      const notifications = await notificationsResponse.json();
+      const preferences = await preferencesResponse.json();
+      emailNotifications.checked = preferences.email;
+
+      if (notifications.length === 0) {
+        notificationsList.innerHTML =
+          "<p>No status notifications yet.</p>";
+        return;
+      }
+
+      notificationsList.innerHTML = notifications
+        .slice()
+        .reverse()
+        .map(
+          (notification) => `
+            <article class="notification-card">
+              <strong>${notification.activity}: ${notification.status}</strong>
+              <p>${notification.message}</p>
+              <p>${notification.next_steps}</p>
+            </article>
+          `
+        )
+        .join("");
+    } catch (error) {
+      console.error("Error loading notifications:", error);
+      notificationsList.innerHTML =
+        "<p>Failed to load notifications.</p>";
+    }
+  }
 
   // Function to fetch activities from API
   async function fetchActivities() {
@@ -88,6 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.ok) {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
+        loadNotifications();
 
         // Refresh activities list to show updated participants
         fetchActivities();
@@ -109,6 +158,26 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error unregistering:", error);
     }
   }
+
+  emailInput.addEventListener("blur", loadNotifications);
+  emailNotifications.addEventListener("change", async () => {
+    const email = emailInput.value.trim();
+    if (!email) {
+      emailNotifications.checked = false;
+      messageDiv.textContent = "Enter a student email first.";
+      messageDiv.className = "error";
+      messageDiv.classList.remove("hidden");
+      return;
+    }
+
+    await fetch(
+      `/notifications/preferences?email=${encodeURIComponent(
+        email
+      )}&email_enabled=${emailNotifications.checked}`,
+      { method: "PUT" }
+    );
+    loadNotifications();
+  });
 
   // Handle form submission
   signupForm.addEventListener("submit", async (event) => {
@@ -133,6 +202,8 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+        emailInput.value = email;
+        loadNotifications();
 
         // Refresh activities list to show updated participants
         fetchActivities();
