@@ -1,6 +1,6 @@
 ## Step 2: Agent Mode and an MCP Server for GitHub
 
-Great work! You just connected your first MCP server to GitHub Copilot! 🎉
+Great work! You just connected your first mcp server to GitHub Copilot! 🎉
 
 🚨 The teachers have been busy opening new issues in your repository with bugs and feature requests! Go [take a look](https://github.com/{{full_repo_name}}/issues) - so many good ideas!
 
