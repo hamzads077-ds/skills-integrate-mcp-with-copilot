@@ -192,6 +192,30 @@ button:hover {
   display: none;
 }
 
+.notification-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.notification-toggle input {
+  width: auto;
+}
+
+.notification-card {
+  margin-bottom: 12px;
+  padding: 12px;
+  border-left: 4px solid #3949ab;
+  border-radius: 4px;
+  background-color: #eef1ff;
+}
+
+.notification-card p {
+  margin-top: 6px;
+}
+
 footer {
   text-align: center;
   margin-top: 30px;
